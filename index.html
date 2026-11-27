@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>易混饮片对照与自测</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f6f6f3;color:#222;font-size:15px;line-height:1.6}
+header{background:#fff;border-bottom:1px solid #ddd;padding:10px 12px;position:sticky;top:0;z-index:5}
+h1{font-size:18px;margin:0 0 6px}
+nav{display:flex;gap:6px}
+nav button{flex:1;padding:8px 4px;border:1px solid #2f6b4f;background:#fff;color:#2f6b4f;border-radius:6px;font-size:15px}
+nav button.on{background:#2f6b4f;color:#fff}
+#notice{font-size:13px;padding:6px 8px;border-radius:6px;margin-bottom:6px}
+.warn{background:#fff4d6;color:#7a5a00}.okbar{background:#e6f3ec;color:#225c3f}
+main{padding:12px;max-width:900px;margin:0 auto}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.card{background:#fff;border:1px solid #e2e2dc;border-radius:8px;padding:10px;margin-bottom:10px}
+.card h2{font-size:16px;margin:0 0 6px}
+h3{font-size:14px;margin:10px 0 4px}
+figure{margin:0 0 8px}
+figure img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;background:#eee}
+figcaption,.meta{font-size:12px;color:#666}
+ol,ul{padding-left:18px;margin:4px 0}
+.badge{display:inline-block;font-size:11px;padding:0 5px;border-radius:4px;margin-left:2px}
+.b-no{background:#fde2e2;color:#9b1c1c}.b-yes{background:#dff3e6;color:#1d6b3c}
+.opt{display:block;padding:10px;border:1px solid #ccc;border-radius:6px;margin:6px 0;background:#fff}
+button.main{width:100%;padding:11px;font-size:16px;background:#2f6b4f;color:#fff;border:0;border-radius:6px;margin-top:6px}
+.right{color:#1d6b3c;font-weight:bold}.wrong{color:#b42318;font-weight:bold}
+table{border-collapse:collapse;width:100%;font-size:12px}
+td,th{border:1px solid #ddd;padding:4px;vertical-align:top;text-align:left}
+#zoom{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:10;overflow:auto;color:#fff}
+#zoom img{display:block;width:100%;margin-top:48px}
+#zoom.big img{width:250%}
+#zoomBar{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:6px;padding:8px;background:#000;font-size:12px}
+#zoomBar button{background:#fff;border:0;border-radius:4px;padding:4px 10px;font-size:14px}
+footer{font-size:12px;color:#888;text-align:center;padding:16px}
+</style>
+</head>
+<body>
+<header>
+  <h1>易混饮片对照与自测</h1>
+  <div id="notice"></div>
+  <nav>
+    <button data-v="compare" class="on">并排对照</button>
+    <button data-v="quiz">看图自测</button>
+    <button data-v="source">资料来源</button>
+  </nav>
+</header>
+<main id="app"></main>
+<div id="zoom" hidden>
+  <div id="zoomBar"><span id="zoomCap"></span><span style="white-space:nowrap"><button id="zoomToggle">放大</button> <button id="zoomClose">关闭</button></span></div>
+  <img id="zoomImg" alt="">
+</div>
+<footer id="foot"></footer>
+
+<script>
+/* ===================== 只需要修改这一部分 ===================== */
+const VERSION = "v0.1 开发版（占位数据）";
+
+/* 真实数据的填写示例（老师核对之后才能这样填）：
+   学习图：{ file:"img/g01_a_1.jpg", role:"study", view:"切面",
+            source:"本校中药鉴定实训室样品，XXX摄于2026-11-26",
+            status:"已核对", checkedBy:"XX老师", checkedDate:"2026-11-27" }
+   自测图：文件名不要含药名，例如 "img/q01.jpg"
+   要点：  { text:"……", source:"《教材名》第X版 第X页",
+            status:"已核对", checkedBy:"XX老师", checkedDate:"2026-11-27" }
+   没有核对的内容，status 保持 "未核对"。                          */
+const DATA = [
+  {
+    title: "第1组（占位示例）",
+    herbs: [
+      {
+        name: "饮片甲（占位）",
+        points: [
+          { text:"【待补充】观察要点1：按教材整理，老师核对后再填", source:"待补充：教材名、版次、页码", status:"未核对", checkedBy:"", checkedDate:"" },
+          { text:"【待补充】观察要点2", source:"待补充", status:"未核对", checkedBy:"", checkedDate:"" }
+        ],
+        photos: [
+          { file:"", role:"study", view:"整体", source:"占位图，非真实饮片", status:"未核对", checkedBy:"", checkedDate:"" },
+          { file:"", role:"study", view:"切面", source:"占位图，非真实饮片", status:"未核对", checkedBy:"", checkedDate:"" },
+          { file:"", role:"quiz",  view:"自测图", source:"占位图，非真实饮片", status:"未核对", checkedBy:"", checkedDate:"" }
+        ]
+      },
+      {
+        name: "饮片乙（占位）",
+        points: [
+          { text:"【待补充】观察要点1", source:"待补充", status:"未核对", checkedBy:"", checkedDate:"" },
+          { text:"【待补充】观察要点2", source:"待补充", status:"未核对", checkedBy:"", checkedDate:"" }
+        ],
+        photos: [
+          { file:"", role:"study", view:"整体", source:"占位图，非真实饮片", status:"未核对", checkedBy:"", checkedDate:"" },
+          { file:"", role:"study", view:"切面", source:"占位图，非真实饮片", status:"未核对", checkedBy:"", checkedDate:"" },
+          { file:"", role:"quiz",  view:"自测图", source:"占位图，非真实饮片", status:"未核对", checkedBy:"", checkedDate:"" }
+        ]
+      }
+    ]
+  }
+];
+/* ===================== 以下一般不需要修改 ===================== */
+
+const $ = id => document.getElementById(id);
+const app = $("app");
+let view = "compare", cur = 0, qs = [], qi = 0, score = 0;
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+// 必须同时有"已核对"、核对人和日期才算核对；占位照片（没有 file）永远不算已核对
+function checked(o){return o.status==="已核对" && !!o.checkedBy && !!o.checkedDate && !(("role" in o) && !o.file);}
+function badge(o){return checked(o)?'<span class="badge b-yes">已核对</span>':'<span class="badge b-no">未核对</span>';}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function ph(label){
+  const s=`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="800" height="600" fill="#e9e9e4"/><line x1="0" y1="0" x2="800" y2="600" stroke="#d0d0c8" stroke-width="4"/><line x1="800" y1="0" x2="0" y2="600" stroke="#d0d0c8" stroke-width="4"/><text x="400" y="280" font-size="40" text-anchor="middle" fill="#777">占位图 · 非真实饮片</text><text x="400" y="340" font-size="30" text-anchor="middle" fill="#777">${esc(label)}</text></svg>`;
+  return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(s);
+}
+function pic(p,label,cap){
+  const src=p.file||ph(label);
+  return `<figure><img class="zm" src="${esc(src)}" alt="${esc(label)}" data-cap="${esc(cap)}"><figcaption>${esc(p.view)} ${badge(p)}</figcaption></figure>`;
+}
+function allItems(){const r=[];DATA.forEach(g=>g.herbs.forEach(h=>{h.points.forEach(x=>r.push(x));h.photos.forEach(x=>r.push(x));}));return r;}
+
+function renderNotice(){
+  const n=allItems().filter(x=>!checked(x)).length, el=$("notice");
+  if(n){el.className="warn";el.textContent=`本页有 ${n} 项图片或文字尚未经老师核对（含占位内容），仅供开发演示，不能作为学习依据。`;}
+  else{el.className="okbar";el.textContent="本页图片与观察要点均已记录核对人和日期。核对说明内容有依据，不代表学习效果。";}
+}
+
+function renderCompare(){
+  const g=DATA[cur];
+  let h=`<label class="meta">选择组别：<select id="gsel">${DATA.map((x,i)=>`<option value="${i}"${i===cur?" selected":""}>${esc(x.title)}</option>`).join("")}</select></label>
+  <p class="meta">点图片可放大。建议先比较两味药同一部位（如切面）的差别。</p><div class="pair">`;
+  g.herbs.forEach(hb=>{
+    h+=`<section class="card"><h2>${esc(hb.name)}</h2>`;
+    hb.photos.filter(p=>p.role==="study").forEach(p=>{h+=pic(p,hb.name+" "+p.view,hb.name+" · "+p.view+" · 来源："+p.source);});
+    h+=`<h3>观察要点</h3><ol>`+hb.points.map(pt=>`<li>${esc(pt.text)} ${badge(pt)}<div class="meta">依据：${esc(pt.source)}</div></li>`).join("")+`</ol></section>`;
+  });
+  app.innerHTML=h+`</div>`;
+  $("gsel").onchange=e=>{cur=+e.target.value;renderCompare();};
+}
+
+function buildQuiz(){
+  qs=[];DATA.forEach(g=>g.herbs.forEach(hb=>hb.photos.filter(p=>p.role==="quiz").forEach(p=>qs.push({g,hb,p}))));
+  qs=shuffle(qs);qi=0;score=0;
+}
+function renderQuiz(){
+  if(!qs.length){app.innerHTML='<div class="card">还没有自测照片。请在数据中把照片的 role 设为 "quiz"。</div>';return;}
+  if(qi>=qs.length){
+    app.innerHTML=`<div class="card"><h2>本轮完成</h2><p>答对 ${score} / ${qs.length} 题。</p><p class="meta">结果只在本页临时显示，不保存、不上传。</p><button class="main" id="again">再来一轮</button></div>`;
+    $("again").onclick=()=>{buildQuiz();renderQuiz();};return;
+  }
+  const q=qs[qi], opts=shuffle(q.g.herbs.map(x=>x.name));
+  app.innerHTML=`<div class="card"><p class="meta">第 ${qi+1} / ${qs.length} 题 · ${esc(q.g.title)}</p>
+  ${pic(q.p,"自测图","自测图片")}
+  <p><b>这张图是哪一味？</b></p>
+  ${opts.map((n,i)=>`<label class="opt"><input type="radio" name="ans" value="${i}"> ${esc(n)}</label>`).join("")}
+  <button class="main" id="sub">提交</button><div id="res"></div></div>`;
+  $("sub").onclick=()=>{
+    const c=document.querySelector('input[name="ans"]:checked');
+    if(!c){$("res").innerHTML='<p class="wrong">请先选择一个答案。</p>';return;}
+    const ok=opts[+c.value]===q.hb.name; if(ok)score++;
+    document.querySelectorAll('input[name="ans"]').forEach(x=>x.disabled=true);
+    $("sub").remove();
+    $("res").innerHTML=`<p class="${ok?"right":"wrong"}">${ok?"回答正确":"回答错误"}。正确答案：${esc(q.hb.name)}</p><h3>观察依据</h3>`+
+      q.g.herbs.map(x=>`<p><b>${esc(x.name)}</b>${x===q.hb?"（本题答案）":""}</p><ul>${x.points.map(pt=>`<li>${esc(pt.text)} ${badge(pt)}</li>`).join("")}</ul>`).join("")+
+      `<button class="main" id="nx">${qi+1<qs.length?"下一题":"查看结果"}</button>`;
+    $("nx").onclick=()=>{qi++;renderQuiz();window.scrollTo(0,0);};
+  };
+}
+
+function renderSource(){
+  const items=allItems(), ok=items.filter(checked).length;
+  let h=`<div class="card"><p>共 ${items.length} 项内容：已记录核对 ${ok} 项，未核对 ${items.length-ok} 项。</p><p class="meta">只有填写了核对人和日期的内容才显示"已核对"；占位图不能标为已核对。</p></div>`;
+  DATA.forEach(g=>{
+    h+=`<h3>${esc(g.title)}</h3>`;
+    g.herbs.forEach(hb=>{
+      h+=`<div class="card"><b>${esc(hb.name)}</b><table><tr><th>类型</th><th>内容</th><th>来源/依据</th><th>核对</th></tr>`;
+      hb.photos.forEach(p=>{h+=`<tr><td>${p.role==="quiz"?"自测图":"学习图"}</td><td>${esc(p.file||"（占位）")}<br>${esc(p.view)}</td><td>${esc(p.source)}</td><td>${badge(p)}<br>${esc(p.checkedBy)} ${esc(p.checkedDate)}</td></tr>`;});
+      hb.points.forEach(pt=>{h+=`<tr><td>要点</td><td>${esc(pt.text)}</td><td>${esc(pt.source)}</td><td>${badge(pt)}<br>${esc(pt.checkedBy)} ${esc(pt.checkedDate)}</td></tr>`;});
+      h+=`</table></div>`;
+    });
+  });
+  app.innerHTML=h;
+}
+
+function render(){renderNotice();({compare:renderCompare,quiz:renderQuiz,source:renderSource})[view]();}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  view=b.dataset.v;
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
+  if(view==="quiz")buildQuiz();
+  render();window.scrollTo(0,0);
+});
+document.addEventListener("click",e=>{
+  const t=e.target;
+  if(t.classList&&t.classList.contains("zm")){
+    $("zoomImg").src=t.src;$("zoomCap").textContent=t.dataset.cap;
+    $("zoom").classList.remove("big");$("zoomToggle").textContent="放大";$("zoom").hidden=false;
+  }
+});
+$("zoomToggle").onclick=()=>{const z=$("zoom");z.classList.toggle("big");$("zoomToggle").textContent=z.classList.contains("big")?"缩小":"放大";};
+$("zoomClose").onclick=()=>{$("zoom").hidden=true;};
+$("foot").textContent=VERSION+" · 静态网页，不收集个人数据 · ";
+render();
+</script>
+</body>
+</html>
